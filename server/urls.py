@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework_simplejwt import views as jwt_views
 
 from server import views
 
@@ -13,5 +14,8 @@ urlpatterns = [
     path("api/book/<int:pk>", views.BookViewId.as_view(), name="books_delete_update"),
     path("api/reservations", views.ReservationViewAPI.as_view(), name="reservations"),
     path("api/reservation/<int:pk>", views.ReservationViewId.as_view(), name="reservations_delete_update"),
+    path('token/obtain', jwt_views.TokenObtainPairView.as_view(), name='token_create'),  # override sjwt stock token
+    path('token/refresh', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('register', views.CreateUser.as_view(),name="create_user")
 
 ]
