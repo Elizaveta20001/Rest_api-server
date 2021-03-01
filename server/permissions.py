@@ -1,0 +1,12 @@
+from rest_framework import permissions
+
+
+class IsOwnerOfObject(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user:
+            if request.user.is_superuser:
+                return True
+            else:
+                return obj.post.author == request.user
+        else:
+            return False
