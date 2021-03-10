@@ -1,10 +1,19 @@
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from server.models import *
 from server.serializers import *
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework import status
+from rest_framework.decorators import permission_classes
+from server.permissions import *
+
+
+def check_edit_permission(request, obj):
+    if request.user.is_superuser:
+        return True
+    else:
+        return obj == request.user
 
 
 class AuthorViewId(APIView):
@@ -15,23 +24,34 @@ class AuthorViewId(APIView):
 
     def delete(self, request, pk):
         author = get_object_or_404(Author.objects.all(), pk=pk)
-        author.delete()
-        return Response({
-            "message": "Article with id `{}` has been deleted.".format(pk)
-        }, status=204)
+        if check_edit_permission(request, author):
+            author.delete()
+            return Response({
+                "message": "Article with id `{}` has been deleted.".format(pk)
+            }, status=204)
+        else:
+            return Response({
+                "message": "You are not allowed to delete".format(author)
+            }, status=401)
 
     def put(self, request, pk):
         author = get_object_or_404(Author.objects.all(), pk=pk)
         data = request.data
-        serializer = AuthorSerializer(instance=author, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            author = serializer.save()
-        return Response({
-            "success": "Author '{}' updated successfully".format(author)
-        })
+        if check_edit_permission(request, author.user):
+            serializer = AuthorSerializer(instance=author, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                author = serializer.save()
+            return Response({
+                "success": "Author '{}' updated successfully".format(author)
+            })
+        else:
+            return Response({
+                "message": "You are not allowed to edit".format(author)
+            }, status=401)
 
 
 class AuthorViewAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         authors = Author.objects.all()
@@ -40,6 +60,7 @@ class AuthorViewAPI(APIView):
 
     def post(self, request):
         author = request.data
+        author['user'] = request.user.id
         serializer = AuthorSerializer(data=author)
         if serializer.is_valid(raise_exception=True):
             author_saved = serializer.save()
@@ -54,23 +75,34 @@ class ReaderViewId(APIView):
 
     def delete(self, request, pk):
         reader = get_object_or_404(Reader.objects.all(), pk=pk)
-        reader.delete()
-        return Response({
-            "message": "Reader with ticket number `{}` has been deleted.".format(pk)
-        }, status=204)
+        if check_edit_permission(request, reader.user):
+            reader.delete()
+            return Response({
+                "message": "Reader with ticket number `{}` has been deleted.".format(pk)
+            }, status=204)
+        else:
+            return Response({
+                "message": "You are not allowed to delete".format(pk)
+            }, status=401)
 
     def put(self, request, pk):
         reader = get_object_or_404(Reader.objects.all(), pk=pk)
         data = request.data
-        serializer = ReaderSerializer(instance=reader, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            reader = serializer.save()
-        return Response({
-            "success": "Reader '{}' updated successfully".format(reader)
-        })
+        if check_edit_permission(request, reader.user):
+            serializer = ReaderSerializer(instance=reader, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                reader = serializer.save()
+            return Response({
+                "success": "Reader '{}' updated successfully".format(reader)
+            })
+        else:
+            return Response({
+                "message": "You are not allowed to edit".format(reader)
+            }, status=401)
 
 
 class ReaderViewAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         readers = Reader.objects.all()
@@ -79,6 +111,7 @@ class ReaderViewAPI(APIView):
 
     def post(self, request):
         reader = request.data
+        reader["user"] = request.user.id
         serializer = ReaderSerializer(data=reader)
         if serializer.is_valid(raise_exception=True):
             reader_saved = serializer.save()
@@ -93,23 +126,34 @@ class PublishingViewId(APIView):
 
     def delete(self, request, pk):
         publishing = get_object_or_404(Publishing.objects.all(), pk=pk)
-        publishing.delete()
-        return Response({
-            "message": "Publishing with publishing code `{}` has been deleted.".format(pk)
-        }, status=204)
+        if check_edit_permission(request, publishing.user):
+            publishing.delete()
+            return Response({
+                "message": "Publishing with publishing code `{}` has been deleted.".format(pk)
+            }, status=204)
+        else:
+            return Response({
+                "message": "You are not allowed to delete".format(pk)
+            }, status=401)
 
     def put(self, request, pk):
         publishing = get_object_or_404(Publishing.objects.all(), pk=pk)
         data = request.data
-        serializer = PublishingSerializer(instance=publishing, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            publishing = serializer.save()
-        return Response({
-            "success": "Publishing '{}' updated successfully".format(publishing)
-        })
+        if check_edit_permission(request, publishing.user):
+            serializer = PublishingSerializer(instance=publishing, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                publishing = serializer.save()
+            return Response({
+                "success": "Publishing '{}' updated successfully".format(publishing)
+            })
+        else:
+            return Response({
+                "message": "You are not allowed to edit".format(publishing)
+            }, status=401)
 
 
 class PublishingViewAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         publishings = Publishing.objects.all()
@@ -118,6 +162,7 @@ class PublishingViewAPI(APIView):
 
     def post(self, request):
         publishing = request.data
+        publishing['user'] = request.user.id
         serializer = PublishingSerializer(data=publishing)
         if serializer.is_valid(raise_exception=True):
             publishing = serializer.save()
@@ -132,23 +177,34 @@ class BookViewId(APIView):
 
     def delete(self, request, pk):
         book = get_object_or_404(Book.objects.all(), pk=pk)
-        book.delete()
-        return Response({
-            "message": "Book with book code `{}` has been deleted.".format(pk)
-        }, status=204)
+        if check_edit_permission(request, book.user):
+            book.delete()
+            return Response({
+                "message": "Book with book code `{}` has been deleted.".format(pk)
+            }, status=204)
+        else:
+            return Response({
+                "message": "You are not allowed to delete".format(pk)
+            }, status=401)
 
     def put(self, request, pk):
         book = get_object_or_404(Book.objects.all(), pk=pk)
         data = request.data
-        serializer = BookSerializer(instance=book, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            book = serializer.save()
-        return Response({
-            "success": "Book '{}' updated successfully".format(book)
-        })
+        if check_edit_permission(request, book.user):
+            serializer = BookSerializer(instance=book, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                book = serializer.save()
+            return Response({
+                "success": "Book '{}' updated successfully".format(book)
+            })
+        else:
+            return Response({
+                "message": "You are not allowed to edit".format(book)
+            }, status=401)
 
 
 class BookViewAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         books = Book.objects.all()
@@ -157,6 +213,7 @@ class BookViewAPI(APIView):
 
     def post(self, request):
         book = request.data
+        book['user'] = request.user.id
         serializer = BookSerializer(data=book)
         if serializer.is_valid(raise_exception=True):
             book = serializer.save()
@@ -164,6 +221,7 @@ class BookViewAPI(APIView):
 
 
 class ReservationViewId(APIView):
+
     def get(self, request, pk):
         reservation = get_object_or_404(Reservation.objects.all(), pk=pk)
         serializer = ReservationSerializer(reservation)
@@ -171,23 +229,34 @@ class ReservationViewId(APIView):
 
     def delete(self, request, pk):
         reservation = get_object_or_404(Reservation.objects.all(), pk=pk)
-        reservation.delete()
-        return Response({
-            "message": "Reservation with reservation code `{}` has been deleted.".format(pk)
-        }, status=204)
+        if check_edit_permission(request, reservation.user):
+            reservation.delete()
+            return Response({
+                "message": "Reservation with reservation code `{}` has been deleted.".format(pk)
+            }, status=204)
+        else:
+            return Response({
+                "message": "You are not allowed to delete.".format(pk)
+            }, status=401)
 
     def put(self, request, pk):
         reservation = get_object_or_404(Reservation.objects.all(), pk=pk)
         data = request.data
-        serializer = ReservationSerializer(instance=reservation, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            reservation = serializer.save()
-        return Response({
-            "success": "Reservation '{}' updated successfully".format(reservation)
-        })
+        if check_edit_permission(request, reservation.user):
+            serializer = ReservationSerializer(instance=reservation, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                reservation = serializer.save()
+            return Response({
+                "success": "Reservation '{}' updated successfully".format(reservation)
+            })
+        else:
+            return Response({
+                "message": "You are not allowed to edit.".format(reservation)
+            }, status=401)
 
 
 class ReservationViewAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         reservations = Reservation.objects.all()
@@ -196,6 +265,7 @@ class ReservationViewAPI(APIView):
 
     def post(self, request):
         reservation = request.data
+        reservation['user'] = request.user.id
         serializer = ReservationSerializer(data=reservation)
         if serializer.is_valid(raise_exception=True):
             reservation = serializer.save()

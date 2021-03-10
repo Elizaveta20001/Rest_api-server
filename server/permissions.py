@@ -7,6 +7,22 @@ class IsOwnerOfObject(permissions.BasePermission):
             if request.user.is_superuser:
                 return True
             else:
-                return obj.post.author == request.user
+                return obj.user == request.user
         else:
             return False
+
+
+SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
+
+
+class IsAuthenticatedOrReadOnly(permissions.BasePermission):
+    """
+    The request is authenticated as a user, or is a read-only request.
+    """
+
+    def has_permission(self, request, view):
+        if (request.method in SAFE_METHODS or
+                request.user and
+                request.user.is_authenticated()):
+            return True
+        return False

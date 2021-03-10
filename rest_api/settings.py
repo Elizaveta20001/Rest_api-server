@@ -94,7 +94,7 @@ SIMPLE_JWT = {
     'AUDIENCE': None,
     'ISSUER': None,
 
-    'AUTH_HEADER_TYPES': ('Bearer',"JWT"),
+    'AUTH_HEADER_TYPES': ('Bearer', "JWT"),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 
@@ -118,6 +118,9 @@ DATABASES = {
         'PASSWORD': os.getenv('SQL_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '3306',
+        'OPTIONS': {
+            "init_command": "SET foreign_key_checks = 0;",
+        }
     }
 }
 

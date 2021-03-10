@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Reader(models.Model):
@@ -6,6 +7,7 @@ class Reader(models.Model):
     last_name = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     telephone_number = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return self.last_name + " " + self.name
@@ -14,6 +16,7 @@ class Reader(models.Model):
 class Publishing(models.Model):
     publishing_code = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return self.name
@@ -23,6 +26,7 @@ class Author(models.Model):
     id = models.IntegerField(primary_key=True)
     last_name = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return self.last_name + " " + self.name
@@ -35,6 +39,7 @@ class Book(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     volume = models.IntegerField()
     quantity = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return str(self.book_code) + " " + self.name
@@ -46,4 +51,6 @@ class Reservation(models.Model):
     reader = models.OneToOneField(Reader, on_delete=models.CASCADE)
     date_of_reservations = models.DateField()
     date_of_return = models.DateField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+
     # Create your models here.
