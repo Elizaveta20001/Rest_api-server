@@ -17,6 +17,8 @@ def check_edit_permission(request, obj):
 
 
 class AuthorViewId(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, pk):
         author = get_object_or_404(Author.objects.all(), pk=pk)
         serializer = AuthorSerializer(author)
@@ -24,7 +26,7 @@ class AuthorViewId(APIView):
 
     def delete(self, request, pk):
         author = get_object_or_404(Author.objects.all(), pk=pk)
-        if check_edit_permission(request, author):
+        if check_edit_permission(request, author.user):
             author.delete()
             return Response({
                 "message": "Article with id `{}` has been deleted.".format(pk)
@@ -32,7 +34,7 @@ class AuthorViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to delete".format(author)
-            }, status=401)
+            }, status=403)
 
     def put(self, request, pk):
         author = get_object_or_404(Author.objects.all(), pk=pk)
@@ -47,7 +49,7 @@ class AuthorViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to edit".format(author)
-            }, status=401)
+            }, status=403)
 
 
 class AuthorViewAPI(APIView):
@@ -68,6 +70,8 @@ class AuthorViewAPI(APIView):
 
 
 class ReaderViewId(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, pk):
         reader = get_object_or_404(Reader.objects.all(), pk=pk)
         serializer = ReaderSerializer(reader)
@@ -83,7 +87,7 @@ class ReaderViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to delete".format(pk)
-            }, status=401)
+            }, status=403)
 
     def put(self, request, pk):
         reader = get_object_or_404(Reader.objects.all(), pk=pk)
@@ -98,7 +102,7 @@ class ReaderViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to edit".format(reader)
-            }, status=401)
+            }, status=403)
 
 
 class ReaderViewAPI(APIView):
@@ -119,6 +123,8 @@ class ReaderViewAPI(APIView):
 
 
 class PublishingViewId(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, pk):
         publishing = get_object_or_404(Publishing.objects.all(), pk=pk)
         serializer = PublishingSerializer(publishing)
@@ -134,7 +140,7 @@ class PublishingViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to delete".format(pk)
-            }, status=401)
+            }, status=403)
 
     def put(self, request, pk):
         publishing = get_object_or_404(Publishing.objects.all(), pk=pk)
@@ -149,7 +155,7 @@ class PublishingViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to edit".format(publishing)
-            }, status=401)
+            }, status=403)
 
 
 class PublishingViewAPI(APIView):
@@ -170,6 +176,8 @@ class PublishingViewAPI(APIView):
 
 
 class BookViewId(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, pk):
         book = get_object_or_404(Book.objects.all(), pk=pk)
         serializer = BookSerializer(book)
@@ -185,7 +193,7 @@ class BookViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to delete".format(pk)
-            }, status=401)
+            }, status=403)
 
     def put(self, request, pk):
         book = get_object_or_404(Book.objects.all(), pk=pk)
@@ -200,7 +208,7 @@ class BookViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to edit".format(book)
-            }, status=401)
+            }, status=403)
 
 
 class BookViewAPI(APIView):
@@ -221,6 +229,7 @@ class BookViewAPI(APIView):
 
 
 class ReservationViewId(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
         reservation = get_object_or_404(Reservation.objects.all(), pk=pk)
@@ -237,7 +246,7 @@ class ReservationViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to delete.".format(pk)
-            }, status=401)
+            }, status=403)
 
     def put(self, request, pk):
         reservation = get_object_or_404(Reservation.objects.all(), pk=pk)
@@ -252,7 +261,7 @@ class ReservationViewId(APIView):
         else:
             return Response({
                 "message": "You are not allowed to edit.".format(reservation)
-            }, status=401)
+            }, status=403)
 
 
 class ReservationViewAPI(APIView):

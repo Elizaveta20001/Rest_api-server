@@ -17,6 +17,6 @@ urlpatterns = [
     path('token/obtain', jwt_views.TokenObtainPairView.as_view(), name='token_create'),  # override sjwt stock token
     path('token/refresh', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('register', views.CreateUser.as_view(),name="create_user"),
-    path('logout', views.LogoutUser.as_view(),name="logout_user")
+    path('logout', views.LogoutUser.as_view(),name="logout_user"),
 
 ]
