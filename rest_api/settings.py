@@ -41,6 +41,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'server.apps.ServerConfig',
     'rest_framework',
+    'oauth2_provider',
+    'social_django',
+    'drf_social_oauth2',
 )
 
 MIDDLEWARE = [
@@ -52,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
 ]
 
 ROOT_URLCONF = 'rest_api.urls'
@@ -68,6 +72,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -79,9 +85,31 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'drf_social_oauth2.authentication.SocialAuthentication',
     ),
 }
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.spotify.SpotifyOAuth2',
+
+    # django-rest-framework-social-oauth2
+    'drf_social_oauth2.backends.DjangoOAuth2',
+
+    # Django
+    'django.contrib.auth.backends.ModelBackend',
+)
+ACTIVATE_JWT = True
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '100677287958-krbae75m3m1fsaovf8l51vvscj4li8gr.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'AVeE1WQF8Dy1jFJdNx77Q03v'
+
+SOCIAL_AUTH_SPOTIFY_OAUTH2_KEY = '54bffc2f04ea410aa02fb29d75453b18'
+SOCIAL_AUTH_SPOTIFY_OAUTH2_SECRET = 'f6cb946516744f42bebd3c5b1ef873e0'
+
+SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY = '750451122341910'
+SOCIAL_AUTH_FACEBOOK_OAUTH2_SECRET = '4764b5a6314361a72a3809ce93975342'
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -98,7 +126,8 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'AUTH_TOKEN_CLASSES': (
+        'rest_framework_simplejwt.tokens.AccessToken', 'rest_framework_simplejwt.tokens.SlidingToken'),
     'TOKEN_TYPE_CLAIM': 'token_type',
 
     'JTI_CLAIM': 'jti',

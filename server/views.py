@@ -4,9 +4,11 @@ from server.models import *
 from server.serializers import *
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.decorators import permission_classes
 from server.permissions import *
+import requests
+import rest_api
 
 
 def check_edit_permission(request, obj):
@@ -297,5 +299,26 @@ class LogoutUser(APIView):
     def get(self, request):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class SocialGoogleLoginView(generics.GenericAPIView):
+    serializer_class = SocialAuthSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.data.get('code', None)
+        client_id = '100677287958-krbae75m3m1fsaovf8l51vvscj4li8gr.apps.googleusercontent.com'
+        client_secret = 'AVeE1WQF8Dy1jFJdNx77Q03v'
+
+        url = 'https://google.com/login/oauth/access_token'
+        data = {'code': code, 'client_id': client_id, 'client_secret': client_secret}
+        res = requests.post(url, data=data)
+        if res.status_code == status.HTTP_200_OK:
+            print(res.text.split('=')[1].split('&')[0])
+            return Response(status=status.HTTP_200_OK, data=res.text.split('=')[1].split('&')[0])
+        else:
+            return Response(status=res.status_code, data=res.text)
 
 # Create your views here.
