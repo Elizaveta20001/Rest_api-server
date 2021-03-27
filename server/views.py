@@ -6,9 +6,11 @@ from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework import status, generics
 from rest_framework.decorators import permission_classes
+from rest_framework.decorators import api_view
+from django.conf import settings
 from server.permissions import *
 import requests
-import rest_api
+import json
 
 
 def check_edit_permission(request, obj):
@@ -301,24 +303,19 @@ class LogoutUser(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class SocialGoogleLoginView(generics.GenericAPIView):
-    serializer_class = SocialAuthSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        code = serializer.data.get('code', None)
-        client_id = '100677287958-krbae75m3m1fsaovf8l51vvscj4li8gr.apps.googleusercontent.com'
-        client_secret = 'AVeE1WQF8Dy1jFJdNx77Q03v'
-
-        url = 'https://google.com/login/oauth/access_token'
-        data = {'code': code, 'client_id': client_id, 'client_secret': client_secret}
-        res = requests.post(url, data=data)
-        if res.status_code == status.HTTP_200_OK:
-            print(res.text.split('=')[1].split('&')[0])
-            return Response(status=status.HTTP_200_OK, data=res.text.split('=')[1].split('&')[0])
-        else:
-            return Response(status=res.status_code, data=res.text)
-
+@api_view(['POST'])
+def get_access_token_from_github(request):
+    code = request.data['code']
+    token = requests.post('https://github.com/login/oauth/access_token/', data=json.dumps({
+        "code": code,
+        "client_id": settings.SOCIAL_AUTH_GITHUB_OAUTH2_KEY,
+        "client_secret": settings.SOCIAL_AUTH_GITHUB_OAUTH2_SECRET
+    }), headers={'content-type': 'application/json'})
+    token.encoding = "utf-8"
+    access_token = token.text.split("&")[0].split("=")[1]
+    print(access_token)
+    if token.status_code == 400:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({"access_token" : access_token},status=status.HTTP_200_OK)
 # Create your views here.

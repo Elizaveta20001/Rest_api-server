@@ -46,6 +46,3 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
-class SocialAuthSerializer(serializers.ModelSerializer):
-    code = serializers.CharField(max_length=255, required=True)
